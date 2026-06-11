@@ -106,13 +106,10 @@
         <p class="ct">Registrar palpite</p>
         <label>Seu nome</label>
         <select id="pp" onchange="renderPalpiteJogos()"><option value="">Selecione seu nome...</option></select>
+        <button class="btn bg bfl" id="btn-salvar-todos" onclick="salvarTodosPalpites()" style="margin-top:.75rem">💾 Salvar palpites</button>
+        <div id="pmsg-todos"></div>
       </div>
-      <div style="display:flex;gap:.375rem;align-items:center;margin-bottom:.75rem">
-        <button class="btn bo bsm rtab active-tab" onclick="setRound(1)">1ª Rodada</button>
-        <button class="btn bo bsm rtab" onclick="setRound(2)">2ª Rodada</button>
-        <button class="btn bo bsm rtab" onclick="setRound(3)">3ª Rodada</button>
-        <button class="btn bo bsm" onclick="refreshData()" title="Atualizar" style="margin-left:auto">↻</button>
-      </div>
+      <div id="round-tabs" style="display:flex;gap:.375rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem"></div>
       <div id="jogos-rodada"></div>
       <div class="sh" style="margin-top:1rem">
         <h2>Palpites de todos</h2>
@@ -124,7 +121,7 @@
     <div id="s-r" class="sec">
       <div class="card" style="background:var(--green-light);border-color:var(--green-muted)">
         <p style="font-size:.75rem;font-weight:600;color:var(--green);margin-bottom:.5rem">Sistema de pontuação</p>
-        <table class="pt"><tr><td>🎯 Placar exato</td><td style="color:var(--green)">5 pts</td></tr><tr><td>✅ Vencedor certo + saldo de gols</td><td style="color:var(--blue)">3 pts</td></tr><tr><td>✔️ Só o vencedor / empate</td><td style="color:var(--g600)">1 pt</td></tr><tr><td>❌ Errou tudo</td><td style="color:var(--red)">0 pts</td></tr></table>
+        <table class="pt"><tr><td>🎯 Placar exato</td><td style="color:var(--green)">5 pts</td></tr><tr><td>✅ Vencedor certo + saldo de gols</td><td style="color:var(--blue)">3 pts</td></tr><tr><td>✔️ Só o vencedor / empate</td><td style="color:var(--g600)">1 pt</td></tr><tr><td>❌ Errou tudo</td><td style="color:var(--red)">0 pts</td></tr><tr><td colspan="2" style="font-size:.75rem;color:var(--yellow);font-weight:600;padding-top:.625rem">⚡ A partir das Oitavas: pontuação em dobro (10 / 6 / 2 pts)</td></tr></table>
       </div>
       <div id="rl"></div>
     </div>
@@ -174,6 +171,28 @@
           </div>
           <button class="btn bg" onclick="registrarRes()">Confirmar resultado</button>
           <div id="rmsg"></div>
+        </div>
+        <div class="card">
+          <p class="ct">➕ Adicionar jogo</p>
+          <p style="font-size:.8125rem;color:var(--g500);margin-bottom:.75rem">Use para cadastrar os jogos do mata-mata quando os confrontos forem definidos.</p>
+          <div class="row2" style="margin-bottom:.5rem">
+            <div><label>Time 1</label><input id="nt1" placeholder="Ex: Brasil" /></div>
+            <div><label>Time 2</label><input id="nt2" placeholder="Ex: Argentina" /></div>
+          </div>
+          <div class="row2" style="margin-bottom:.75rem">
+            <div><label>Data e hora</label><input id="ndt" type="datetime-local" /></div>
+            <div><label>Fase</label>
+              <select id="nfase">
+                <option value="4">Rodada de 32</option>
+                <option value="5">Oitavas de final</option>
+                <option value="6">Quartas de final</option>
+                <option value="7">Semifinal</option>
+                <option value="8">Terceiro lugar / Final</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn bg" onclick="adicionarJogo()">Adicionar jogo</button>
+          <div id="nmsg"></div>
         </div>
         <div style="margin-top:1rem;text-align:center"><button class="btn bo" onclick="lockAdmin()">Sair da área admin</button></div>
       </div>
@@ -284,12 +303,23 @@ function fdt(dt){if(!dt)return'';const d=new Date(dt);return d.toLocaleString('p
 function setLo(v){document.getElementById('lo').style.display=v?'flex':'none'}
 function msg(id,txt,ok=true){const el=document.getElementById(id);if(!el)return;el.innerHTML=`<div class="al ${ok?'ao':'ae'}">${txt}</div>`;setTimeout(()=>el.innerHTML='',4000)}
 
-function calcPts(p,res){
+function calcPts(p,res,jogoId){
   if(!res)return null;
-  if(p.g1===res.g1&&p.g2===res.g2)return 5;
-  const sp=p.g1-p.g2,sr=res.g1-res.g2;
-  const vp=sp>0?1:sp<0?-1:0,vr=sr>0?1:sr<0?-1:0;
-  if(vp===vr){return sp===sr?3:1}return 0;
+  let base;
+  if(p.g1===res.g1&&p.g2===res.g2)base=5;
+  else{const sp=p.g1-p.g2,sr=res.g1-res.g2;const vp=sp>0?1:sp<0?-1:0,vr=sr>0?1:sr<0?-1:0;base=vp===vr?(sp===sr?3:1):0}
+  const round=jogoId?getRound(jogoId):0;
+  return base*(round>=5?2:1);
+}
+function ptsDisplay(pts,jogoId){
+  if(pts===null)return{cls:'',lb:''};
+  const round=jogoId?getRound(jogoId):0;
+  const mult=round>=5?2:1;
+  const base=pts/mult;
+  if(base===5)return{cls:'pe',lb:pts+'pts 🎯'};
+  if(base===3)return{cls:'pg',lb:pts+'pts ✅'};
+  if(base===1)return{cls:'po',lb:pts+(pts>1?'pts':'pt')+' ✔️'};
+  return{cls:'pm',lb:'0 ❌'};
 }
 
 // ── JSONBIN ──
@@ -339,7 +369,7 @@ function startApp(){
   document.getElementById('atitle').textContent=ST.nome;
   document.getElementById('bindisp').textContent='ID: '+BIN_ID;
   currentRound=detectCurrentRound();
-  updateRoundTabs();
+  renderRoundTabs();
   populateSels();renderPalpiteJogos();renderPub();
 }
 
@@ -415,6 +445,7 @@ function populateSels(){
   const ps=document.getElementById('pp');const pv=ps.value;
   ps.innerHTML='<option value="">Selecione seu nome...</option>'+ST.participantes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
   if(pv)ps.value=pv;
+  else{const saved=localStorage.getItem('bp');if(saved)ps.value=saved;}
   populateResSelect();
 }
 
@@ -472,17 +503,24 @@ function updateRF(){
 }
 
 // ── PALPITE POR RODADA ──
+const ROUND_LABELS={1:'1ª Rodada',2:'2ª Rodada',3:'3ª Rodada',4:'Rodada de 32',5:'Oitavas',6:'Quartas',7:'Semifinal',8:'Final'};
 function getRound(id){return parseInt(id[1])}
+function getActiveRounds(){return[...new Set(ST.jogos.map(j=>getRound(j.id)).filter(r=>!isNaN(r)))].sort((a,b)=>a-b)}
 function detectCurrentRound(){
-  for(let r=1;r<=3;r++){if(ST.jogos.some(j=>getRound(j.id)===r&&ST.resultados[j.id]===undefined))return r}
-  return 3;
+  const rounds=getActiveRounds();
+  for(const r of rounds){if(ST.jogos.some(j=>getRound(j.id)===r&&ST.resultados[j.id]===undefined))return r}
+  return rounds[rounds.length-1]||1;
 }
-function updateRoundTabs(){
-  document.querySelectorAll('.rtab').forEach((b,i)=>b.classList.toggle('active-tab',i+1===currentRound));
+function renderRoundTabs(){
+  const rounds=getActiveRounds();
+  document.getElementById('round-tabs').innerHTML=
+    rounds.map(r=>`<button class="btn bo bsm rtab${r===currentRound?' active-tab':''}" onclick="setRound(${r})">${ROUND_LABELS[r]||'Rodada '+r}</button>`).join('')+
+    `<button class="btn bo bsm" onclick="refreshData()" title="Atualizar" style="margin-left:auto">↻</button>`;
 }
-function setRound(r){currentRound=r;updateRoundTabs();renderPalpiteJogos()}
+function setRound(r){currentRound=r;renderRoundTabs();renderPalpiteJogos()}
 function renderPalpiteJogos(){
   const partId=document.getElementById('pp').value;
+  if(partId)localStorage.setItem('bp',partId);
   const jogos=ST.jogos.filter(j=>getRound(j.id)===currentRound).sort((a,b)=>new Date(a.data)-new Date(b.data));
   const el=document.getElementById('jogos-rodada');
   if(!jogos.length){el.innerHTML='<div class="empty">Nenhum jogo nesta rodada.</div>';return}
@@ -491,21 +529,48 @@ function renderPalpiteJogos(){
     const pal=partId?ST.palpites.find(p=>p.partId===partId&&p.jogoId===j.id):null;
     const enc=res!==undefined;
     let right='';
-    if(!enc){right=`<button class="btn bg bsm" onclick="salvarPalpiteJogo('${j.id}',this)">💾</button>`}
-    else if(pal!=null){const pts=calcPts(pal,res);const cls=['pm','po','pg','','pe'][pts]||'';const lb=['0 ❌','1pt ✔️','3pts ✅','','5pts 🎯'][pts]||'';right=`<span class="${cls}" style="font-size:.75rem;font-weight:700;min-width:58px;text-align:right">${lb}</span>`}
-    else{right=`<span style="font-size:.7rem;color:var(--g400);min-width:58px;text-align:right">sem palpite</span>`}
+    if(enc&&pal!=null){const pts=calcPts(pal,res,j.id);const{cls,lb}=ptsDisplay(pts,j.id);right=`<span class="${cls}" style="font-size:.75rem;font-weight:700;min-width:58px;text-align:right">${lb}</span>`}
+    else if(enc){right=`<span style="font-size:.7rem;color:var(--g400);min-width:58px;text-align:right">sem palpite</span>`}
     return`<div class="card" style="padding:.625rem .875rem;margin-bottom:.5rem">
       <div style="font-size:.7rem;color:var(--g400);margin-bottom:.375rem">${j.grupo} · ${fdt(j.data)}${enc?` · <span style="color:var(--green);font-weight:600">Resultado: ${res.g1}×${res.g2}</span>`:''}</div>
       <div style="display:flex;align-items:center;gap:.375rem">
         <span style="flex:1;text-align:right;font-size:.8125rem;font-weight:600;line-height:1.2">${j.t1}</span>
-        <input id="pg1-${j.id}" class="sc" type="number" min="0" max="30" placeholder="—" value="${pal!=null?pal.g1:''}" style="width:44px"${enc?' disabled':''}>
+        <input id="pg1-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g1:''}" style="width:44px"${enc?' disabled':''}>
         <span style="font-size:.875rem;font-weight:700;color:var(--g400);padding:0 .125rem">×</span>
-        <input id="pg2-${j.id}" class="sc" type="number" min="0" max="30" placeholder="—" value="${pal!=null?pal.g2:''}" style="width:44px"${enc?' disabled':''}>
+        <input id="pg2-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g2:''}" style="width:44px"${enc?' disabled':''}>
         <span style="flex:1;font-size:.8125rem;font-weight:600;line-height:1.2">${j.t2}</span>
         ${right}
       </div>
     </div>`;
   }).join('');
+}
+async function salvarTodosPalpites(){
+  const partId=document.getElementById('pp').value;
+  if(!partId){msg('pmsg-todos','Selecione seu nome primeiro.',false);return}
+  const jogos=ST.jogos.filter(j=>getRound(j.id)===currentRound&&ST.resultados[j.id]===undefined);
+  const novos=[];
+  for(const j of jogos){
+    const g1v=(document.getElementById('pg1-'+j.id)?.value||'').trim();
+    const g2v=(document.getElementById('pg2-'+j.id)?.value||'').trim();
+    if(g1v===''||g2v==='')continue;
+    if(!/^\d+$/.test(g1v)||!/^\d+$/.test(g2v)){msg('pmsg-todos','Placar inválido em '+j.t1+' × '+j.t2,false);return}
+    novos.push({jogoId:j.id,g1:parseInt(g1v),g2:parseInt(g2v)});
+  }
+  if(!novos.length){msg('pmsg-todos','Preencha ao menos um placar.',false);return}
+  const btn=document.getElementById('btn-salvar-todos');
+  btn.disabled=true;btn.innerHTML='<span class="sp"></span>Salvando...';
+  try{
+    await syncST();
+    for(const {jogoId,g1,g2} of novos){
+      const idx=ST.palpites.findIndex(p=>p.partId===partId&&p.jogoId===jogoId);
+      const pal={id:uid(),partId,jogoId,g1,g2};
+      if(idx>=0)ST.palpites[idx]=pal;else ST.palpites.push(pal);
+    }
+    await persist();
+    msg('pmsg-todos',`✅ ${novos.length} palpite${novos.length>1?'s':''} salvo${novos.length>1?'s':''}!`);
+    renderPalpiteJogos();renderPub();
+  }catch(e){msg('pmsg-todos','Erro: '+e.message,false)}
+  finally{btn.disabled=false;btn.innerHTML='💾 Salvar palpites'}
 }
 async function salvarPalpiteJogo(jogoId,btn){
   const partId=document.getElementById('pp').value;
@@ -572,9 +637,9 @@ function renderPub(){
       ${res!==undefined?`<p style="font-size:.75rem;color:var(--green);font-weight:600;margin-bottom:.375rem">Resultado: ${j.t1} ${res.g1} × ${res.g2} ${j.t2}</p>`:''}
       ${pals.map(p=>{
         const part=ST.participantes.find(x=>x.id===p.partId);if(!part)return'';
-        const pts=calcPts(p,res);
+        const pts=calcPts(p,res,jid);
         let cl='',lb='';
-        if(pts===5){cl='pe';lb='5pts 🎯'}else if(pts===3){cl='pg';lb='3pts ✅'}else if(pts===1){cl='po';lb='1pt ✔️'}else if(pts===0){cl='pm';lb='0pts ❌'}else lb='—';
+        if(pts!==null){const d=ptsDisplay(pts,jid);cl=d.cls;lb=d.lb}else lb='—';
         return`<div class="pr"><div class="av" style="width:28px;height:28px;font-size:.6875rem;background:${part.bg};color:${part.color}">${ini(part.nome)}</div>
           <span style="flex:1;font-size:.8125rem;font-weight:500">${part.nome}</span>
           <span class="ps">${j.t1} ${p.g1} × ${p.g2} ${j.t2}</span>
@@ -600,6 +665,30 @@ async function registrarRes(){
     msg('rmsg',`Resultado de ${j?.t1} × ${j?.t2} salvo!`);
     renderAdminJogos();populateSels();populateResSelect();
   }catch(e){msg('rmsg','Erro: '+e.message,false)}
+  finally{setLo(false)}
+}
+
+// ── ADICIONAR JOGO ──
+async function adicionarJogo(){
+  const t1=document.getElementById('nt1').value.trim();
+  const t2=document.getElementById('nt2').value.trim();
+  const dt=document.getElementById('ndt').value;
+  const faseNum=parseInt(document.getElementById('nfase').value);
+  if(!t1||!t2||!dt){msg('nmsg','Preencha todos os campos.',false);return}
+  const faseNome=ROUND_LABELS[faseNum]||('Rodada '+faseNum);
+  const count=ST.jogos.filter(j=>getRound(j.id)===faseNum).length+1;
+  const id=`k${faseNum}g${String(count).padStart(2,'0')}`;
+  setLo(true);
+  try{
+    await syncST();
+    ST.jogos.push({id,t1,t2,data:dt,fase:faseNome,grupo:faseNome});
+    await persist();
+    document.getElementById('nt1').value='';
+    document.getElementById('nt2').value='';
+    document.getElementById('ndt').value='';
+    msg('nmsg',`${t1} × ${t2} adicionado!`);
+    renderRoundTabs();populateResSelect();
+  }catch(e){msg('nmsg','Erro: '+e.message,false)}
   finally{setLo(false)}
 }
 
@@ -641,7 +730,7 @@ function renderPlacar(){
     let total=0,jogados=0,exatos=0;
     ST.palpites.filter(x=>x.partId===p.id).forEach(pal=>{
       const res=ST.resultados[pal.jogoId];
-      if(res!==undefined){const pts=calcPts(pal,res);total+=pts;jogados++;if(pts===5)exatos++}
+      if(res!==undefined){const pts=calcPts(pal,res,pal.jogoId);total+=pts;jogados++;const mult=getRound(pal.jogoId)>=5?2:1;if(pts===5*mult)exatos++}
     });
     return{...p,total,jogados,exatos};
   }).sort((a,b)=>b.total-a.total||b.exatos-a.exatos);
