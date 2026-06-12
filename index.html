@@ -504,6 +504,7 @@ function updateRF(){
 // ── PALPITE POR RODADA ──
 const ROUND_LABELS={1:'1ª Rodada',2:'2ª Rodada',3:'3ª Rodada',4:'Rodada de 32',5:'Oitavas',6:'Quartas',7:'Semifinal',8:'Final'};
 function getRound(id){return parseInt(id[1])}
+function jogoIniciado(j){return new Date()>=new Date(j.data)}
 function getActiveRounds(){return[...new Set(ST.jogos.map(j=>getRound(j.id)).filter(r=>!isNaN(r)))].sort((a,b)=>a-b)}
 function detectCurrentRound(){
   const rounds=getActiveRounds();
@@ -527,16 +528,19 @@ function renderPalpiteJogos(){
     const res=ST.resultados[j.id];
     const pal=partId?ST.palpites.find(p=>p.partId===partId&&p.jogoId===j.id):null;
     const enc=res!==undefined;
+    const iniciado=jogoIniciado(j);
+    const bloqueado=enc||iniciado;
     let right='';
     if(enc&&pal!=null){const pts=calcPts(pal,res,j.id);const{cls,lb}=ptsDisplay(pts,j.id);right=`<span class="${cls}" style="font-size:.75rem;font-weight:700;min-width:58px;text-align:right">${lb}</span>`}
     else if(enc){right=`<span style="font-size:.7rem;color:var(--g400);min-width:58px;text-align:right">sem palpite</span>`}
+    else if(iniciado){right=`<span style="font-size:.7rem;color:var(--yellow);font-weight:600;min-width:58px;text-align:right">🔒 iniciado</span>`}
     return`<div class="card" style="padding:.625rem .875rem;margin-bottom:.5rem">
       <div style="font-size:.7rem;color:var(--g400);margin-bottom:.375rem">${j.grupo} · ${fdt(j.data)}${enc?` · <span style="color:var(--green);font-weight:600">Resultado: ${res.g1}×${res.g2}</span>`:''}</div>
       <div style="display:flex;align-items:center;gap:.375rem">
         <span style="flex:1;text-align:right;font-size:.8125rem;font-weight:600;line-height:1.2">${j.t1}</span>
-        <input id="pg1-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g1:''}" style="width:44px"${enc?' disabled':''}>
+        <input id="pg1-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g1:''}" style="width:44px"${bloqueado?' disabled':''}>
         <span style="font-size:.875rem;font-weight:700;color:var(--g400);padding:0 .125rem">×</span>
-        <input id="pg2-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g2:''}" style="width:44px"${enc?' disabled':''}>
+        <input id="pg2-${j.id}" class="sc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="—" value="${pal!=null?pal.g2:''}" style="width:44px"${bloqueado?' disabled':''}>
         <span style="flex:1;font-size:.8125rem;font-weight:600;line-height:1.2">${j.t2}</span>
         ${right}
       </div>
@@ -546,7 +550,7 @@ function renderPalpiteJogos(){
 async function salvarTodosPalpites(){
   const partId=document.getElementById('pp').value;
   if(!partId){msg('pmsg-todos','Selecione seu nome primeiro.',false);return}
-  const jogos=ST.jogos.filter(j=>getRound(j.id)===currentRound&&ST.resultados[j.id]===undefined);
+  const jogos=ST.jogos.filter(j=>getRound(j.id)===currentRound&&ST.resultados[j.id]===undefined&&!jogoIniciado(j));
   const novos=[];
   for(const j of jogos){
     const g1v=(document.getElementById('pg1-'+j.id)?.value||'').trim();
