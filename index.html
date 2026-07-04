@@ -172,6 +172,14 @@
           <div id="rmsg"></div>
         </div>
         <div class="card">
+          <p class="ct">🗑️ Remover jogo</p>
+          <p style="font-size:.8125rem;color:var(--g500);margin-bottom:.75rem">Remove o jogo e todos os palpites associados.</p>
+          <input class="srch" id="delsearch" placeholder="🔍 Ex: Brasil, oitavas..." oninput="filterDelJogos()" style="margin-bottom:.375rem" />
+          <select id="delj" style="margin-bottom:.75rem"><option value="">Selecione o jogo...</option></select>
+          <button class="btn br" onclick="removerJogo()">🗑️ Remover jogo</button>
+          <div id="delmsg"></div>
+        </div>
+        <div class="card">
           <p class="ct">➕ Adicionar jogo</p>
           <p style="font-size:.8125rem;color:var(--g500);margin-bottom:.75rem">Use para cadastrar os jogos do mata-mata quando os confrontos forem definidos.</p>
           <div class="row2" style="margin-bottom:.5rem">
@@ -401,7 +409,7 @@ function checkPwd(){
     document.getElementById('alock').style.display='none';
     document.getElementById('ac').style.display='block';
     document.getElementById('sbinid').textContent=BIN_ID;
-    renderPartList();renderAdminJogos();populateResSelect();
+    renderPartList();renderAdminJogos();populateResSelect();filterDelJogos();
   }else msg('pwdmsg','Senha incorreta.',false);
 }
 function lockAdmin(){document.getElementById('alock').style.display='block';document.getElementById('ac').style.display='none';document.getElementById('apwd').value='';setTab('p')}
@@ -668,6 +676,34 @@ async function registrarRes(){
     msg('rmsg',`Resultado de ${j?.t1} × ${j?.t2} salvo!`);
     renderAdminJogos();populateSels();populateResSelect();
   }catch(e){msg('rmsg','Erro: '+e.message,false)}
+  finally{setLo(false)}
+}
+
+// ── REMOVER JOGO ──
+function filterDelJogos(){
+  const q=(document.getElementById('delsearch')?.value||'').toLowerCase();
+  const sel=document.getElementById('delj');if(!sel)return;
+  const filtered=ST.jogos.filter(j=>(j.t1+j.t2+j.grupo+fdt(j.data)).toLowerCase().includes(q));
+  sel.innerHTML='<option value="">Selecione o jogo...</option>'+filtered.map(j=>{
+    const res=ST.resultados[j.id];
+    return`<option value="${j.id}">[${j.grupo}] ${j.t1} × ${j.t2} — ${fdt(j.data)}${res!==undefined?' ✓':''}</option>`;
+  }).join('');
+}
+async function removerJogo(){
+  const jogoId=document.getElementById('delj').value;
+  if(!jogoId){msg('delmsg','Selecione um jogo.',false);return}
+  const j=ST.jogos.find(x=>x.id===jogoId);
+  if(!confirm(`Remover "${j?.t1} × ${j?.t2}" e todos os palpites deste jogo?`))return;
+  setLo(true);
+  try{
+    await syncST();
+    ST.jogos=ST.jogos.filter(x=>x.id!==jogoId);
+    ST.palpites=ST.palpites.filter(p=>p.jogoId!==jogoId);
+    delete ST.resultados[jogoId];
+    await persist();
+    msg('delmsg','Jogo removido!');
+    filterDelJogos();populateResSelect();
+  }catch(e){msg('delmsg','Erro: '+e.message,false)}
   finally{setLo(false)}
 }
 
