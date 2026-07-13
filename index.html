@@ -640,6 +640,8 @@ function renderPub(){
   el.innerHTML=Object.entries(byJogo).map(([jid,pals])=>{
     const j=ST.jogos.find(x=>x.id===jid);if(!j)return'';
     const res=ST.resultados[jid];
+    const iniciado=jogoIniciado(j);
+    const oculto=res===undefined&&!iniciado;
     return`<div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
         <div><p style="font-size:.875rem;font-weight:700">${j.t1} × ${j.t2}</p><p style="font-size:.75rem;color:var(--g400)">${j.grupo} · ${fdt(j.data)}</p></div>
@@ -651,9 +653,10 @@ function renderPub(){
         const pts=calcPts(p,res,jid);
         let cl='',lb='';
         if(pts!==null){const d=ptsDisplay(pts,jid);cl=d.cls;lb=d.lb}else lb='—';
+        const placar=oculto?`<span class="ps" style="color:var(--g400)">🔒 palpite feito</span>`:`<span class="ps">${j.t1} ${p.g1} × ${p.g2} ${j.t2}</span>`;
         return`<div class="pr"><div class="av" style="width:28px;height:28px;font-size:.6875rem;background:${part.bg};color:${part.color}">${ini(part.nome)}</div>
           <span style="flex:1;font-size:.8125rem;font-weight:500">${part.nome}</span>
-          <span class="ps">${j.t1} ${p.g1} × ${p.g2} ${j.t2}</span>
+          ${placar}
           <span style="font-size:.8125rem;min-width:52px;text-align:right" class="${cl}">${lb}</span></div>`;
       }).join('')}
     </div>`;
