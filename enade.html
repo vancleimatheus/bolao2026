@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão ENADE · Componente Específico de Pedagogia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink:#20223A;
+    --indigo:#2A3559;
+    --indigo-deep:#1D2440;
+    --ivory:#F0EDE3;
+    --cream:#FBF9F3;
+    --gold:#C08A28;
+    --gold-soft:#EFDDB0;
+    --certo:#3F6B4F;
+    --certo-bg:#E7F0E9;
+    --errado:#A6433D;
+    --errado-bg:#F6E6E4;
+    --line:#D9D6C9;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .topo{
+    background:var(--indigo-deep);
+    color:var(--cream);
+    padding:28px 24px 22px;
+    text-align:center;
+  }
+
+  .topo .kicker{
+    font-family:'Fraunces', serif;
+    font-size:14px;
+    letter-spacing:.04em;
+    color:var(--gold-soft);
+    margin:0 0 4px;
+  }
+
+  .topo h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(22px, 4vw, 32px);
+    margin:0 0 6px;
+  }
+
+  .topo p{
+    margin:0 auto;
+    font-size:14.5px;
+    color:#D3D6E6;
+    max-width:540px;
+  }
+
+  .trilha{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+    padding:16px 24px 0;
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  .marca{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    font-size:10px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--ivory);
+    color:var(--indigo);
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .marca.certa{ background:var(--certo); border-color:var(--certo); color:#fff; }
+  .marca.errada{ background:var(--errado); border-color:var(--errado); color:#fff; }
+  .marca.atual{ box-shadow:0 0 0 3px var(--gold-soft); }
+
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 24px 60px;
+  }
+
+  .cartao{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:30px 30px 26px;
+  }
+
+  .cabecalho-questao{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:18px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+  }
+
+  .numero{
+    font-family:'Fraunces', serif;
+    font-size:36px;
+    font-weight:600;
+    color:var(--gold);
+    line-height:1;
+  }
+
+  .meta{ display:flex; flex-direction:column; gap:2px; }
+  .meta .area{ font-size:12.5px; color:var(--indigo); font-weight:600; }
+  .meta .tema{ font-family:'Fraunces', serif; font-size:17px; color:var(--ink); }
+
+  .texto-base{
+    background:var(--ivory);
+    border-left:3px solid var(--indigo);
+    border-radius:0 4px 4px 0;
+    padding:16px 18px;
+    margin-bottom:20px;
+  }
+  .texto-base .rotulo{
+    font-family:'Fraunces', serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--indigo);
+    letter-spacing:.02em;
+    margin:0 0 6px;
+  }
+  .texto-base p{
+    margin:0 0 10px;
+    font-size:14.5px;
+    line-height:1.6;
+    color:#33344E;
+  }
+  .texto-base p:last-child{ margin-bottom:0; }
+  .texto-base .fonte{
+    font-size:12px;
+    color:#8A8778;
+    font-style:italic;
+  }
+
+  .enunciado{
+    font-size:16px;
+    line-height:1.6;
+    margin:0 0 22px;
+    font-weight:600;
+  }
+
+  .alternativas{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .alt{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    text-align:left;
+    width:100%;
+    padding:13px 16px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--cream);
+    cursor:pointer;
+    font:inherit;
+    font-size:15px;
+    color:var(--ink);
+    transition:border-color .15s ease, background .15s ease;
+  }
+
+  .alt:hover:not(:disabled){ border-color:var(--indigo); background:#fff; }
+
+  .alt .letra{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    color:var(--indigo);
+    flex-shrink:0;
+    width:20px;
+  }
+
+  .alt:disabled{ cursor:default; }
+
+  .alt.marcada-certa{ background:var(--certo-bg); border-color:var(--certo); }
+  .alt.marcada-certa .letra{ color:var(--certo); }
+  .alt.marcada-errada{ background:var(--errado-bg); border-color:var(--errado); }
+  .alt.marcada-errada .letra{ color:var(--errado); }
+  .alt.esmaecida{ opacity:.55; }
+
+  .justificativas{
+    margin-top:20px;
+    display:none;
+    flex-direction:column;
+    gap:10px;
+  }
+  .justificativas.visivel{ display:flex; }
+
+  .just{
+    border-radius:4px;
+    padding:12px 15px;
+    font-size:14px;
+    line-height:1.55;
+    border-left:3px solid var(--line);
+  }
+  .just.certa{ background:var(--certo-bg); border-left-color:var(--certo); }
+  .just.errada{ background:var(--errado-bg); border-left-color:var(--errado); }
+  .just b{ font-family:'Fraunces', serif; font-weight:600; }
+
+  .rodape-cartao{
+    margin-top:24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+
+  .placar{ font-size:14px; color:var(--indigo); font-weight:600; }
+
+  button.avancar{
+    font-family:'Source Sans 3', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    background:var(--indigo);
+    color:var(--cream);
+    border:none;
+    padding:11px 22px;
+    border-radius:4px;
+    cursor:pointer;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .15s ease;
+  }
+  button.avancar.pronta{ opacity:1; pointer-events:auto; }
+  button.avancar:hover{ background:var(--indigo-deep); }
+
+  .resultado{
+    text-align:center;
+    padding:40px 30px;
+  }
+  .resultado .numero-grande{
+    font-family:'Fraunces', serif;
+    font-size:64px;
+    font-weight:600;
+    color:var(--gold);
+    line-height:1;
+  }
+  .resultado h2{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    margin:6px 0 4px;
+  }
+  .resultado p{ color:#5A5A6E; font-size:14.5px; margin:0 0 24px; }
+
+  .resumo-lista{
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin:0 0 26px;
+  }
+  .resumo-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 14px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-size:13.5px;
+  }
+  .resumo-item .marca{ margin:0; }
+  .resumo-item .tema-mini{ color:var(--ink); }
+  .resumo-item .num-mini{ color:#8F8C7C; font-family:'Fraunces', serif; }
+
+  button.reiniciar{
+    font-family:'Source Sans 3', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    background:transparent;
+    color:var(--indigo);
+    border:1.5px solid var(--indigo);
+    padding:10px 20px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  button.reiniciar:hover{ background:var(--ivory); }
+
+  @media (max-width:520px){
+    .cartao{ padding:22px 18px 20px; }
+    .cabecalho-questao{ gap:10px; }
+    .numero{ font-size:28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <p class="kicker">Enade 2025 · Componente Específico</p>
+  <h1>Revisão para Pedagogia</h1>
+  <p>15 questões do componente específico do curso, com o texto-base de cada uma e a justificativa teórica de toda alternativa — certa e errada.</p>
+</div>
+
+<div class="trilha" id="trilha"></div>
+
+<main>
+  <div class="cartao" id="cartao"></div>
+</main>
+
+<script>
+const questoes = [
+  {
+    numero: 31,
+    tema: "Fundamentos metodológicos da História nos Anos Iniciais",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Um pedagogo que atua em um museu municipal planejou uma visita guiada com estudantes dos Anos Iniciais do Ensino Fundamental, percorrendo o bairro e mostrando casas e edifícios históricos, monumentos e outros pontos importantes para o reconhecimento da história local.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, texto para as questões de 31 a 33 (adaptado).</p>
+    `,
+    enunciado: "Considerando essa situação, os fundamentos da História mobilizados nesse cenário pedagógico foram:",
+    alternativas: [
+      { letra:"A", texto:"Lógica, paisagem e fato histórico.", correta:false,
+        justificativa:"A 'lógica' não é um fundamento metodológico específico da História; a atividade descrita mobiliza antes noções de fonte e memória a partir dos próprios espaços do bairro." },
+      { letra:"B", texto:"Cartografia, alfabetização e letramento.", correta:false,
+        justificativa:"Cartografia é mais própria da Geografia, e alfabetização/letramento pertencem ao campo da Língua Portuguesa — nenhum desses é um fundamento metodológico específico da História." },
+      { letra:"C", texto:"Fonte, memória e tempo histórico.", correta:true,
+        justificativa:"É a alternativa correta. Usar prédios, monumentos e o próprio espaço do bairro como testemunhos do passado mobiliza justamente os fundamentos de fonte histórica (os vestígios materiais), memória (a lembrança coletiva do local) e tempo histórico (a percepção de permanências e mudanças)." },
+      { letra:"D", texto:"Espaço, corpo e movimento.", correta:false,
+        justificativa:"Espaço, corpo e movimento são fundamentos mais associados à Educação Física, não aos fundamentos metodológicos próprios do ensino de História." }
+    ]
+  },
+  {
+    numero: 35,
+    tema: "Ensino de Geografia nos Anos Iniciais",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Nos Anos Iniciais do Ensino Fundamental, o ensino de Geografia introduz conceitos como localização, orientação, mapas e representações espaciais. Uma possibilidade de conduzir esse ensino é propor atividades de representação cartográfica, incentivando os estudantes a desenharem mapas de lugares conhecidos — como a rota de casa até a escola — ou mapas imaginários de lugares fantásticos.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, questão 35 (adaptado).</p>
+    `,
+    enunciado: "De acordo com esse texto, o ensino de Geografia para os Anos Iniciais tem a função de:",
+    alternativas: [
+      { letra:"A", texto:"Utilizar linguagens cartográficas, com vistas a resolver problemas com informações geográficas e desenvolver o pensamento espacial.", correta:true,
+        justificativa:"É a alternativa correta. A atividade de desenhar mapas de lugares conhecidos ou imaginários trabalha diretamente a linguagem cartográfica e o pensamento espacial, competências específicas do ensino de Geografia nos Anos Iniciais." },
+      { letra:"B", texto:"Agir individual e coletivamente com respeito, autonomia e responsabilidade, com vistas à preservação do meio ambiente.", correta:false,
+        justificativa:"Descreve uma competência geral da BNCC (relacionada à sustentabilidade), e não a função específica do ensino de Geografia com foco em cartografia descrita no texto." },
+      { letra:"C", texto:"Desenvolver o raciocínio lógico, o espírito de investigação e a capacidade de produzir argumentos convincentes.", correta:false,
+        justificativa:"Refere-se a habilidades mais associadas ao pensamento matemático e científico, e não à função cartográfica e espacial específica do ensino de Geografia descrita no texto." },
+      { letra:"D", texto:"Empregar, nas interações sociais, a variedade e o estilo de linguagens cartográficas.", correta:false,
+        justificativa:"Mistura de forma pouco precisa a linguagem cartográfica com interações sociais, quando o texto trata especificamente da representação espacial como ferramenta de pensamento geográfico." }
+    ]
+  },
+  {
+    numero: 38,
+    tema: "Pedagogia Social em espaço não escolar",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma pedagoga iniciou seu trabalho em uma instituição não governamental que acolhe crianças e adolescentes em situação de vulnerabilidade física, social e emocional. Os projetos interdisciplinares dessa instituição oferecem atendimento educacional no contraturno escolar — reforço escolar, oficinas de artes e de educação física, orientações para o autoconhecimento e o bem-estar.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, texto para as questões 38 e 39.</p>
+    `,
+    enunciado: "Considerando o contexto de atuação da pedagoga e, em especial, o atendimento a essas crianças e a esses adolescentes, o planejamento das atividades deve:",
+    alternativas: [
+      { letra:"A", texto:"Promover a melhora no desempenho escolar por meio de testes de conteúdos previstos no currículo, tendo como foco as dificuldades de aprendizagem e as questões sociais adversas.", correta:false,
+        justificativa:"Centra o planejamento em testes de conteúdo e no enquadramento das dificuldades como déficits a serem medidos, contrariando a abordagem acolhedora e contextualizada que a Pedagogia Social propõe para esse público." },
+      { letra:"B", texto:"Ajustá-los às expectativas de desempenho escolar, impedindo que a condição de vulnerabilidade interfira no desenvolvimento de cada um.", correta:false,
+        justificativa:"Propõe ignorar o impacto real da vulnerabilidade social sobre o desenvolvimento, uma negação da realidade que compromete o planejamento pedagógico sensível ao contexto de vida dos estudantes." },
+      { letra:"C", texto:"Oferecer experiências de aprendizagem considerando a realidade, o ambiente social e as condições de vida de cada um, possibilitando ampliar os conhecimentos prévios.", correta:true,
+        justificativa:"É a alternativa correta. Considerar a realidade, o ambiente social e as condições de vida de cada criança e adolescente é o princípio central de um planejamento pedagógico contextualizado, coerente com a atuação em espaços de acolhimento a populações vulneráveis." },
+      { letra:"D", texto:"Desenvolver as competências e as habilidades necessárias para a formação do cidadão, assumindo que questões de ordem afetiva e social pouco impactam na aquisição de conhecimentos.", correta:false,
+        justificativa:"Nega o impacto das questões afetivas e sociais sobre a aprendizagem, contrariando justamente a premissa da instituição descrita, voltada ao acolhimento de crianças em situação de vulnerabilidade emocional e social." }
+    ]
+  },
+  {
+    numero: 41,
+    tema: "Uso saudável de telas na infância",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Crianças e adolescentes têm direito ao uso e ao desfrute dos recursos tecnológicos para a própria aprendizagem, mas famílias e instituições precisam agir para diminuir os riscos do mau uso dessas ferramentas — efeitos negativos sobre sono, atenção, aprendizado, sistema hormonal, regulação do humor, sistema osteoarticular, audição e visão, além do risco de exposição a contatos desconhecidos.</p>
+      <p class="fonte">Fonte: sbp.com.br, acesso em 16 jun. 2025 (adaptado).</p>
+    `,
+    enunciado: "Considerando os direitos das crianças e os riscos do uso indevido de ferramentas tecnológicas, as ações que a escola deve desenvolver para o uso saudável de telas são:",
+    alternativas: [
+      { letra:"A", texto:"Estimular a medicalização para tratar o tecnoestresse e contribuir para a autogestão dos estudantes no combate ao uso excessivo das telas.", correta:false,
+        justificativa:"Medicalizar uma questão de hábitos e de convivência escolar transfere ao campo clínico uma responsabilidade que é, antes de tudo, pedagógica e formativa." },
+      { letra:"B", texto:"Monitorar o tempo de exposição à tela no ambiente escolar e utilizar apenas materiais didáticos impressos, desconsiderando as tecnologias digitais.", correta:false,
+        justificativa:"Propõe uma rejeição total das tecnologias digitais, uma resposta desproporcional que ignora seus benefícios pedagógicos e não promove o uso crítico e equilibrado que o texto-base sugere." },
+      { letra:"C", texto:"Disponibilizar textos sobre educação midiática nos canais digitais da escola e identificar casos de dependência tecnológica valendo-se de aplicativos digitais.", correta:false,
+        justificativa:"Restringe a ação a meios digitais (textos on-line, aplicativos), sem propor experiências alternativas de convívio social e atividade física que equilibrem o tempo de tela." },
+      { letra:"D", texto:"Promover reuniões de pais para propiciar discussões sobre o uso crítico da tecnologia e organizar práticas pedagógicas que envolvam jogos e brincadeiras, atividades ao ar livre e convívio social.", correta:true,
+        justificativa:"É a alternativa correta. Articula a formação das famílias com a oferta escolar de experiências alternativas (jogos, atividades ao ar livre, convívio social), promovendo um uso equilibrado das telas sem negar seus benefícios nem recorrer à medicalização." }
+    ]
+  },
+  {
+    numero: 47,
+    tema: "Língua Portuguesa, BNCC e campo da vida pública",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma charge retrata uma criança pedindo à mãe para aprender a ler e escrever, e a mãe reagindo com deboche, como se o desejo do filho fosse uma pretensão exagerada — uma crítica irônica à desvalorização da educação em contextos de desigualdade social. Uma professora de Anos Iniciais utilizou essa charge como ponto de partida para uma aula interdisciplinar sobre desigualdades sociais no Brasil.</p>
+      <p class="fonte">Fonte: AMÂNCIO. Disponível em ensino.hi7.com, acesso em 10 nov. 2025 (adaptado).</p>
+    `,
+    enunciado: "Na aula de Língua Portuguesa, a professora utilizou essa mesma charge com o intuito de inter-relacionar os eixos da Base Nacional Comum Curricular (BNCC) e o campo da vida pública. Para atender a essa finalidade, o procedimento metodológico deve ser:",
+    alternativas: [
+      { letra:"A", texto:"Comparar as ideias expressas na charge com as ideias contidas em um meme com o mesmo tema para analisar os efeitos de humor.", correta:false,
+        justificativa:"Foca na análise do humor como recurso linguístico, o que dialoga mais com o campo artístico-literário do que com o campo da vida pública indicado no enunciado." },
+      { letra:"B", texto:"Produzir, a partir do debate gerado pela charge, uma notícia de um fato ocorrido na escola para ser publicada no mural.", correta:true,
+        justificativa:"É a alternativa correta. Produzir uma notícia — gênero textual típico do campo jornalístico/midiático da vida pública — a partir do debate sobre desigualdade social articula exatamente os eixos da BNCC ao campo da vida pública exigido pela questão." },
+      { letra:"C", texto:"Buscar, a partir dos termos contidos na charge, o significado das palavras desconhecidas para ampliar o vocabulário.", correta:false,
+        justificativa:"Trata-se de uma atividade de ampliação vocabular, relevante em si, mas que não corresponde ao trabalho com gêneros do campo da vida pública solicitado pela questão." },
+      { letra:"D", texto:"Transformar a charge em um poema para explorar rimas, sons, jogos de palavras e imagens.", correta:false,
+        justificativa:"Trabalha com o campo artístico-literário (poema, rimas, sonoridade), e não com o campo da vida pública, que é o eixo indicado no enunciado." }
+    ]
+  },
+  {
+    numero: 50,
+    tema: "Atendimento Educacional Especializado (AEE) e TEA",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma professora dos Anos Iniciais identificou, em um estudante com Transtorno do Espectro Autista (TEA), dificuldades relativas a habilidades motoras, verbalização, autonomia e socialização — essenciais às práticas pedagógicas de sala de aula. Reconhecendo a necessidade de suporte pedagógico e de recursos específicos, é imprescindível que o estudante receba Atendimento Educacional Especializado (AEE) para complementar a ação da professora.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, texto para as questões 49 e 50.</p>
+    `,
+    enunciado: "Nesse caso, o Atendimento Educacional Especializado deve proporcionar o(a):",
+    alternativas: [
+      { letra:"A", texto:"Presença do estudante em algumas atividades da escola.", correta:false,
+        justificativa:"É vago e sugere participação parcial, quando o AEE tem organização própria (na sala de recursos multifuncionais), e não uma presença fragmentada em 'algumas atividades'." },
+      { letra:"B", texto:"Frequência em sala de recursos multifuncionais.", correta:true,
+        justificativa:"É a alternativa correta. O AEE se realiza, prioritariamente, em salas de recursos multifuncionais na própria escola regular, complementando — e não substituindo — a escolarização do estudante na turma comum." },
+      { letra:"C", texto:"Ingresso em classe especial na escola regular.", correta:false,
+        justificativa:"A organização em 'classe especial' segregada contraria o princípio da educação inclusiva, que prevê a permanência do estudante na turma comum com o suporte complementar do AEE." },
+      { letra:"D", texto:"Matrícula em escola especial no contraturno.", correta:false,
+        justificativa:"Descola o AEE da escola regular, contrariando a política de inclusão vigente, que situa esse atendimento como complementar e realizado preferencialmente na própria rede regular de ensino." }
+    ]
+  },
+  {
+    numero: 51,
+    tema: "Adaptações no AEE para deficiência motora",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma estudante do 4º ano do Ensino Fundamental tem deficiência motora que limita os movimentos e a coordenação dos membros e da cabeça. Além da acessibilidade física e pedagógica, ela tem direito ao Atendimento Educacional Especializado (AEE), conforme a Política Nacional de Educação Especial na Perspectiva da Educação Inclusiva e a Lei nº 13.146/15, podendo utilizar tecnologias assistivas e recursos de comunicação alternativa que favoreçam o acesso ao currículo e o desenvolvimento de sua autonomia.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, questão 51.</p>
+    `,
+    enunciado: "No que diz respeito aos processos de alfabetização e de letramento dessa estudante, os instrumentos de adaptação que devem ser utilizados no AEE são os(as):",
+    alternativas: [
+      { letra:"A", texto:"Pranchas de letras indicadas para a estudante escolher, letra a letra, enquanto um colega ou o professor registra a produção textual.", correta:false,
+        justificativa:"É um recurso legítimo, mas isolado: restringe-se à seleção letra a letra e depende inteiramente de um mediador para o registro, sem incluir a diversidade de sistemas simbólicos que o AEE deve oferecer." },
+      { letra:"B", texto:"Vocalizadores acoplados às pranchas de comunicação específicas para a estudante, que favorecem a comunicação oral e a construção de sentidos.", correta:false,
+        justificativa:"Volta-se mais à comunicação oral alternativa do que aos processos específicos de alfabetização e letramento, que exigem também o trabalho com sistemas simbólicos de leitura e escrita." },
+      { letra:"C", texto:"Materiais didáticos adaptados que estimulem tanto habilidades perceptivas táteis e cinestésicas da estudante quanto sistemas simbólicos alternativos.", correta:true,
+        justificativa:"É a alternativa correta. Combina a adaptação sensório-motora (táctil e cinestésica), pertinente à deficiência motora, com sistemas simbólicos alternativos de leitura e escrita, atendendo de modo mais completo aos processos de alfabetização e letramento dessa estudante." },
+      { letra:"D", texto:"Recursos de tecnologia assistiva visual, como aplicativos de comunicação Libras-Português, que garantem todas as possibilidades de comunicação para a estudante.", correta:false,
+        justificativa:"Aplicativos de Libras-Português respondem a necessidades de estudantes surdos, não de deficiência motora — um descompasso entre o recurso proposto e a condição da estudante descrita." }
+    ]
+  },
+  {
+    numero: 55,
+    tema: "Avaliação em larga escala e estreitamento curricular",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma charge satiriza o desempenho do Brasil em uma prova internacional de alfabetização, sugerindo, de forma irônica, que os adultos precisam melhorar os resultados ou o país "ficará de castigo". No cenário educacional brasileiro, a aplicação de testes em larga escala é cada vez mais frequente; embora tenha contribuído para avanços em alguns índices, pesquisadores questionam até que ponto essas políticas avaliativas têm impactado a formulação dos currículos. Ao fenômeno em que os testes em larga escala determinam unilateralmente o que deve ser ensinado nos currículos, dá-se o nome de "estreitamento curricular" (Freitas, 2018).</p>
+      <p class="fonte">Fonte: CAZO, blogdoaftm.com.br, acesso em 23 abr. 2024 (adaptado).</p>
+    `,
+    enunciado: "Considerando essa ponderação, a prática pedagógica que expressa o fenômeno do 'estreitamento curricular' está pautada:",
+    alternativas: [
+      { letra:"A", texto:"Na realização de projetos de reforço escolar que analisem os resultados dos estudantes nas avaliações externas.", correta:false,
+        justificativa:"Usar resultados de avaliações externas para orientar reforço escolar é uma prática diagnóstica legítima, e não uma determinação unilateral do que deve ser ensinado no currículo." },
+      { letra:"B", texto:"No planejamento de atividades que articulem os conteúdos curriculares às habilidades aferidas nos testes em larga escala.", correta:false,
+        justificativa:"Articular o currículo já existente a habilidades também avaliadas nos testes é uma forma de diálogo entre currículo e avaliação, distinta da substituição do currículo pelas matrizes de teste." },
+      { letra:"C", texto:"Na preparação de apostilas que focalizem as matrizes de referências dos testes em larga escala para guiar o trabalho pedagógico.", correta:true,
+        justificativa:"É a alternativa correta. Quando apostilas construídas exclusivamente a partir das matrizes de referência dos testes passam a guiar todo o trabalho pedagógico, o próprio teste — e não o currículo pleno — passa a determinar unilateralmente o que é ensinado, configurando o estreitamento curricular descrito por Freitas (2018)." },
+      { letra:"D", texto:"No desenvolvimento de pesquisas que identifiquem os impactos dos fatores internos e externos à escola no desempenho dos estudantes.", correta:false,
+        justificativa:"Trata-se de uma prática investigativa e analítica sobre os fatores de desempenho, e não de uma prática que restrinja o currículo às matrizes de testes." }
+    ]
+  },
+  {
+    numero: 58,
+    tema: "Pedagogia Social — metodologias de intervenção",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>A Pedagogia Social pode ser compreendida como instrumento de prevenção, recuperação e transformação, provocando os sujeitos a uma reflexão crítica da realidade, de modo que busquem alternativas, construam conhecimentos e visualizem possibilidades para o exercício da cidadania plena. O educador social busca alternativas, elabora propostas e estratégias de intervenção, objetivando minimizar conflitos e dificuldades vivenciados pela sociedade, atuar na garantia dos direitos humanos e fortalecer ou reconstruir vínculos.</p>
+      <p class="fonte">Fonte: RODRIGUES, A. O.; SILVA, S. P. Pedagogia social e educação social no cenário brasileiro. Revista Lusófona de Educação, n. 60, 2023 (adaptado).</p>
+    `,
+    enunciado: "Ao atuar na perspectiva da Pedagogia Social, o pedagogo deve utilizar metodologias de ensino que:",
+    alternativas: [
+      { letra:"A", texto:"Relacionem as formas de discriminações sociais, étnicas, raciais, culturais e de gênero às políticas assistencialistas ofertadas pelo governo.", correta:false,
+        justificativa:"Reduz a Pedagogia Social a uma extensão de políticas assistencialistas, quando o próprio referencial teórico da área busca justamente superar o assistencialismo por meio da reflexão crítica e da autonomia dos sujeitos." },
+      { letra:"B", texto:"Priorizem os conteúdos curriculares que auxiliem crianças e jovens em situação de vulnerabilidade a romperem com suas diferenças sociais.", correta:false,
+        justificativa:"Sugere apagar ou 'romper' as diferenças sociais dos sujeitos, quando a Pedagogia Social propõe reconhecer essas diferenças criticamente, e não negá-las ou eliminá-las." },
+      { letra:"C", texto:"Mobilizem a reflexão crítica sobre o contexto social e econômico, a fim de formar sujeitos ativos e conscientes dos próprios direitos e deveres.", correta:true,
+        justificativa:"É a alternativa correta. Corresponde diretamente à função da Pedagogia Social descrita no texto-base: provocar reflexão crítica da realidade para formar sujeitos capazes de exercer plenamente a cidadania, conscientes de direitos e deveres." },
+      { letra:"D", texto:"Retomem a centralidade da ação docente no processo de ensino e de aprendizagem, a fim de assegurar práticas educativas transformadoras da realidade.", correta:false,
+        justificativa:"Centra a proposta na figura do professor em sentido escolar tradicional, quando a Pedagogia Social atua sobretudo em espaços não escolares, com um educador que compartilha protagonismo com a comunidade." }
+    ]
+  },
+  {
+    numero: 61,
+    tema: "Projeto Político-Pedagógico (PPP) e comunidade escolar",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma escola discute a reformulação de seu Projeto Político-Pedagógico (PPP), sobretudo diante do avanço, em sua comunidade, da disseminação de notícias falsas. O processo de escrita do PPP é considerado, por muitos estudiosos, a identidade primária de toda instituição de ensino.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, texto para as questões 61 e 62.</p>
+    `,
+    enunciado: "A comunidade escolar, como um dos segmentos que participa da elaboração do PPP, deve:",
+    alternativas: [
+      { letra:"A", texto:"Determinar os conteúdos, os projetos e as disciplinas que organizam a rotina escolar.", correta:false,
+        justificativa:"Definir conteúdos e disciplinas é uma atribuição técnico-pedagógica da equipe docente e da coordenação, e não uma tarefa exclusiva da comunidade escolar no processo de elaboração do PPP." },
+      { letra:"B", texto:"Organizar o programa de alimentação escolar, considerando as necessidades nutricionais do bairro.", correta:false,
+        justificativa:"É uma atribuição operacional específica, distante do papel mais amplo de participação política e deliberativa que cabe à comunidade na construção do PPP." },
+      { letra:"C", texto:"Elaborar a planilha orçamentária de gastos da instituição de ensino, priorizando as obras mais importantes.", correta:false,
+        justificativa:"É uma tarefa administrativo-financeira, que não corresponde ao papel de participação nas discussões sobre fundamentos, objetivos e contexto que caracteriza a contribuição da comunidade ao PPP." },
+      { letra:"D", texto:"Colaborar com as discussões que permeiam os fundamentos, os objetivos e o contexto em que a escola está inserida.", correta:true,
+        justificativa:"É a alternativa correta. A participação da comunidade escolar na elaboração do PPP se dá justamente na colaboração com as discussões sobre os fundamentos, os objetivos e o contexto da escola, e não em tarefas técnicas ou administrativas específicas." }
+    ]
+  },
+  {
+    numero: 64,
+    tema: "Lei nº 11.645/08 — culturas africana e indígena",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma professora do 4º ano do Ensino Fundamental implementou um projeto que atende à Lei nº 11.645/08, envolvendo os componentes Arte e Língua Portuguesa. Em parceria com a professora de Arte, dividiu a turma em quatro grupos — dois dedicados ao estudo de culturas africanas e dois ao de culturas indígenas — seguindo os procedimentos: leitura e discussão de um conto; consulta a livros e materiais diversos; definição de uma forma de recontar a história; e apresentação do reconto.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, questão 64.</p>
+    `,
+    enunciado: "Com essa sequência de atividades, as professoras possibilitam que os estudantes:",
+    alternativas: [
+      { letra:"A", texto:"Ampliem a compreensão de mundo, o repertório semântico, a criatividade e a capacidade de comunicação.", correta:true,
+        justificativa:"É a alternativa correta. A leitura, a pesquisa, o reconto e a apresentação articulam compreensão de mundo, ampliação de repertório e desenvolvimento da comunicação — dimensões diretamente favorecidas por essa sequência interdisciplinar sobre culturas africana e indígena." },
+      { letra:"B", texto:"Reelaborem o funcionamento psíquico, a escrita imitativa, as pseudoletras e a representação simbólica.", correta:false,
+        justificativa:"Descreve processos da fase inicial de aquisição da escrita (psicogênese da língua escrita), incompatíveis com uma turma de 4º ano já alfabetizada, que realiza leitura, pesquisa e reconto de textos." },
+      { letra:"C", texto:"Promovam o conhecimento das culturas, a decodificação de textos e a conscientização moralizante.", correta:false,
+        justificativa:"A expressão 'conscientização moralizante' introduz um viés doutrinário incompatível com a proposta crítica e cultural da Lei nº 11.645/08, que busca valorização identitária, não moralização." },
+      { letra:"D", texto:"Reconheçam os signos linguísticos, os sinais gráficos e os diferentes gêneros textuais.", correta:false,
+        justificativa:"Restringe os ganhos da atividade a aspectos técnicos da linguagem, deixando de lado a dimensão mais ampla de valorização cultural e de compreensão de mundo que a sequência didática propõe." }
+    ]
+  },
+  {
+    numero: 65,
+    tema: "Plano Nacional de Educação em Direitos Humanos",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>O Plano Nacional de Educação em Direitos Humanos (2018) tem como objetivo principal difundir a cultura de direitos humanos no país, disseminando valores solidários, cooperativos e de justiça social. A pedagoga de uma escola, apreensiva com o aumento de casos de violência na instituição, resolveu implementar ações de prevenção e de combate a essas práticas.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, questão 65 (adaptado).</p>
+    `,
+    enunciado: "Considerando o Plano Nacional de Educação em Direitos Humanos, as práticas desenvolvidas na escola devem:",
+    alternativas: [
+      { letra:"A", texto:"Organizar turmas específicas com estudantes que praticam esse tipo de violência e separá-los do restante dos colegas para participarem de projetos de reflexão sobre o tema.", correta:false,
+        justificativa:"Propõe a segregação dos estudantes que praticam violência, uma medida excludente contrária ao princípio participativo e de convivência que o Plano Nacional de Educação em Direitos Humanos preconiza." },
+      { letra:"B", texto:"Identificar estudantes que praticam esse tipo de violência no ambiente escolar e puni-los conforme o regimento da instituição de ensino.", correta:false,
+        justificativa:"Enfatiza uma resposta punitiva e disciplinar, quando o Plano defende a disseminação formativa e contínua da cultura de direitos humanos como estratégia central." },
+      { letra:"C", texto:"Desenvolver uma pedagogia participativa, o que inclui fóruns de discussões permanentes, palestras e projetos interventivos.", correta:true,
+        justificativa:"É a alternativa correta. Corresponde diretamente à proposta do Plano Nacional de Educação em Direitos Humanos, que aposta na disseminação contínua e participativa de valores solidários e de justiça social como caminho para prevenir e combater a violência." },
+      { letra:"D", texto:"Promover a padronização da cultura escolar, o que permite estabelecer regras de conduta para os estudantes.", correta:false,
+        justificativa:"Uma padronização de condutas via regras fixas não corresponde à perspectiva formativa, participativa e voltada à diversidade que fundamenta o Plano Nacional de Educação em Direitos Humanos." }
+    ]
+  },
+  {
+    numero: 72,
+    tema: "Mediação docente na Educação Infantil (Vygotsky)",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Na teoria de Vygotsky, o desenvolvimento humano ocorre com base na interação social e na mediação cultural, sendo a aprendizagem um motor do desenvolvimento. O conceito de Zona de Desenvolvimento Proximal (ZDP) representa a distância entre o que a criança já consegue fazer sozinha e o que consegue fazer com ajuda. Na Educação Infantil, o papel do professor como mediador é essencial para promover experiências de aprendizagem construídas em relações significativas com as crianças.</p>
+      <p class="fonte">Fonte: VYGOTSKY, L. S. A formação social da mente. São Paulo: Martins, 2007 (adaptado).</p>
+    `,
+    enunciado: "Considerando o texto, é essencial que a prática pedagógica na Educação Infantil promova experiências de aprendizagem mediadas por relações significativas, nas quais a:",
+    alternativas: [
+      { letra:"A", texto:"Ação docente incentive a autonomia por meio de atividades individuais e de conteúdos sequenciados que, com base nos interesses da criança, consolidem o desenvolvimento infantil.", correta:false,
+        justificativa:"Enfatiza atividades individuais e conteúdos previamente sequenciados, uma abordagem mais próxima do ensino instrucionista do que da mediação social e interativa proposta por Vygotsky." },
+      { letra:"B", texto:"Mediação docente se efetiva quando o professor organiza o planejamento com base em comportamentos exemplares e em metas de aprendizagem previamente estabelecidas.", correta:false,
+        justificativa:"Descreve uma lógica de modelagem por 'comportamentos exemplares' e metas fixas, de inspiração behaviorista, distante da mediação dialógica e social que caracteriza a perspectiva vygotskiana." },
+      { letra:"C", texto:"Ação docente valorize práticas em que a criança, apoiada por ambientes acessíveis, desenvolva suas capacidades com base em testes objetivos realizados autonomamente.", correta:false,
+        justificativa:"Recorre a testes objetivos e autonomia isolada, contrariando a ideia de que o desenvolvimento infantil se dá fundamentalmente por meio da interação social mediada, e não de avaliações individuais." },
+      { letra:"D", texto:"Mediação docente se efetiva na construção compartilhada do conhecimento, o que promove situações de aprendizagem socialmente interativas.", correta:true,
+        justificativa:"É a alternativa correta. Reflete o núcleo da teoria vygotskiana: a mediação docente atua na construção compartilhada do conhecimento, promovendo interações sociais que impulsionam o avanço da criança dentro de sua Zona de Desenvolvimento Proximal." }
+    ]
+  },
+  {
+    numero: 74,
+    tema: "BNCC — Campos de experiências e literatura infantil",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Uma escola de Educação Infantil recebeu um novo grupo de professoras. Durante uma reunião de acolhida, a coordenadora pedagógica percebeu insegurança de algumas para planejar atividades, e as profissionais mais experientes sugeriram que o planejamento anual fosse orientado por um projeto de incentivo às práticas literárias — considerando tanto o baixo interesse da comunidade pela leitura quanto os documentos normativos, como a BNCC, e o letramento literário.</p>
+      <p class="fonte">Fonte: caderno de provas Enade 2025 — Pedagogia, texto para as questões 74 e 75.</p>
+    `,
+    enunciado: "Considerando os Campos de experiências da BNCC para a Educação Infantil, a escola, ao focalizar o ensino da literatura infantil, deve prever que objetivos?",
+    alternativas: [
+      { letra:"A", texto:"Promover atividades de alfabetização, registrando a escrita por meio da letra cursiva.", correta:false,
+        justificativa:"Restringe o foco a uma técnica específica de registro gráfico (letra cursiva), sem relação direta com a experiência literária e a construção de sentido que a BNCC propõe para a Educação Infantil." },
+      { letra:"B", texto:"Estimular brincadeiras cantadas e a recitação de poemas, para criar rimas, aliterações e ritmos, analisando os aspectos estruturais de tais poemas.", correta:false,
+        justificativa:"A exigência de 'analisar os aspectos estruturais' dos poemas é uma abordagem formal mais própria de etapas posteriores de escolarização, incompatível com a exploração lúdica e sensorial da linguagem esperada na Educação Infantil." },
+      { letra:"C", texto:"Favorecer a produção de suas próprias histórias orais e escritas (escrita espontânea), promovendo situações com função social significativa.", correta:true,
+        justificativa:"É a alternativa correta. A BNCC para a Educação Infantil valoriza a produção espontânea de histórias orais e escritas em situações com função social real, coerente com uma experiência literária significativa e não escolarizante." },
+      { letra:"D", texto:"Levantar hipóteses sobre gêneros textuais veiculados em suportes de textos conhecidos, recorrendo a estratégias de cópias de textos.", correta:false,
+        justificativa:"A 'cópia de textos' como estratégia contraria a perspectiva de produção espontânea e significativa de sentido que orienta o trabalho com literatura na Educação Infantil." }
+    ]
+  },
+  {
+    numero: 78,
+    tema: "Letramento literário na Educação Infantil (Cosson)",
+    textoBase: `
+      <p class="rotulo">Texto-base</p>
+      <p>Para Cosson (2009), a prática da literatura, seja pela leitura, seja pela escrita, consiste em uma exploração das potencialidades da linguagem. O letramento literário corresponde a uma prática social de leitura e de escrita, um processo de apropriação da literatura como construção de sentidos — uma aprendizagem que não se limita à escola, mas acompanha a vida toda e se renova a cada nova leitura significativa.</p>
+      <p class="fonte">Fonte: COSSON, R. Letramento literário: para viver a literatura dentro e fora da escola. In: ZILBERMAN, R.; ROSING, T. M. K. (org.). Escola e leitura. São Paulo: Global, 2009 (adaptado).</p>
+    `,
+    enunciado: "Tomando como referência a reflexão do autor, é correto inferir que o letramento literário na Educação Infantil tem como função:",
+    alternativas: [
+      { letra:"A", texto:"Constituir uma prática social com significado e ter o objetivo de entreter a criança por meio da literatura infantil.", correta:false,
+        justificativa:"Reduz a função do letramento literário ao entretenimento, deixando de lado sua dimensão mais ampla de construção de sentidos e compreensão de mundo que Cosson atribui à experiência literária." },
+      { letra:"B", texto:"Desenvolver a escrita e incentivar a busca de conhecimentos sobre conteúdos específicos selecionados pelo professor.", correta:false,
+        justificativa:"Enquadra a literatura como veículo de conteúdos pré-selecionados, uma visão instrumental que contraria a concepção de Cosson da literatura como exploração das potencialidades da linguagem e construção autônoma de sentido." },
+      { letra:"C", texto:"Organizar um planejamento padronizado e utilizar a leitura e a escrita como técnicas que possibilitam a formação crítica da criança.", correta:false,
+        justificativa:"A ideia de planejamento 'padronizado' contradiz o caráter singular, contínuo e renovável a cada leitura que Cosson atribui à experiência literária, que não se reduz a uma técnica formativa uniforme." },
+      { letra:"D", texto:"Trabalhar a literatura com as crianças e promover o encontro com a imaginação como forma de compreender a realidade por meio da ficção.", correta:true,
+        justificativa:"É a alternativa correta. Corresponde à concepção de Cosson: a literatura, por meio da ficção e da imaginação, permite à criança construir sentidos sobre a realidade — uma aprendizagem viva que acompanha toda a vida, dentro e fora da escola." }
+    ]
+  }
+];
+
+let atual = 0;
+let respostas = new Array(questoes.length).fill(null);
+let respostasEscolhidas = new Array(questoes.length).fill(null);
+
+const trilhaEl = document.getElementById('trilha');
+const cartaoEl = document.getElementById('cartao');
+
+function montarTrilha(){
+  trilhaEl.innerHTML = '';
+  questoes.forEach((q, i) => {
+    const m = document.createElement('div');
+    m.className = 'marca';
+    m.textContent = i + 1;
+    if (i === atual) m.classList.add('atual');
+    if (respostas[i] !== null) {
+      m.classList.add(respostas[i] ? 'certa' : 'errada');
+    }
+    trilhaEl.appendChild(m);
+  });
+}
+
+function renderizarQuestao(){
+  if (atual >= questoes.length) { renderizarResultado(); return; }
+  const q = questoes[atual];
+  const jaRespondida = respostas[atual] !== null;
+
+  let html = `
+    <div class="cabecalho-questao">
+      <div class="numero">${String(q.numero).padStart(2,'0')}</div>
+      <div class="meta">
+        <span class="area">Componente Específico — Pedagogia</span>
+        <span class="tema">${q.tema}</span>
+      </div>
+    </div>
+    <div class="texto-base">${q.textoBase}</div>
+    <p class="enunciado">${q.enunciado}</p>
+    <div class="alternativas">
+  `;
+
+  q.alternativas.forEach((alt, idx) => {
+    let classe = '';
+    if (jaRespondida) {
+      if (alt.correta) classe = 'marcada-certa';
+      else if (!alt.correta && respostasEscolhidas[atual] === idx) classe = 'marcada-errada';
+      else classe = 'esmaecida';
+    }
+    html += `<button class="alt ${classe}" ${jaRespondida ? 'disabled' : ''} data-idx="${idx}">
+      <span class="letra">${alt.letra}</span><span>${alt.texto}</span>
+    </button>`;
+  });
+
+  html += `</div><div class="justificativas ${jaRespondida ? 'visivel' : ''}" id="justs">`;
+  if (jaRespondida) {
+    q.alternativas.forEach(alt => {
+      html += `<div class="just ${alt.correta ? 'certa' : 'errada'}">
+        <b>${alt.letra}${alt.correta ? ' — correta.' : ' — incorreta.'}</b> ${alt.justificativa}
+      </div>`;
+    });
+  }
+  html += `</div>
+    <div class="rodape-cartao">
+      <span class="placar">Acertos: ${respostas.filter(r => r === true).length} / ${respostas.filter(r => r !== null).length}</span>
+      <button class="avancar ${jaRespondida ? 'pronta' : ''}" id="btnAvancar">
+        ${atual === questoes.length - 1 ? 'Ver resultado' : 'Próxima questão'}
+      </button>
+    </div>
+  `;
+
+  cartaoEl.innerHTML = html;
+  montarTrilha();
+
+  if (!jaRespondida) {
+    cartaoEl.querySelectorAll('.alt').forEach(btn => {
+      btn.addEventListener('click', () => escolher(parseInt(btn.dataset.idx)));
+    });
+  }
+  document.getElementById('btnAvancar').addEventListener('click', () => {
+    if (respostas[atual] === null) return;
+    atual++;
+    renderizarQuestao();
+  });
+}
+
+function escolher(idx){
+  const q = questoes[atual];
+  respostasEscolhidas[atual] = idx;
+  respostas[atual] = q.alternativas[idx].correta;
+  renderizarQuestao();
+}
+
+function renderizarResultado(){
+  const acertos = respostas.filter(r => r === true).length;
+  let html = `
+    <div class="resultado">
+      <div class="numero-grande">${acertos}/${questoes.length}</div>
+      <h2>Revisão concluída</h2>
+      <p>Confira abaixo o desempenho por tema e revise os pontos que exigem atenção antes da prova.</p>
+      <div class="resumo-lista">
+  `;
+  questoes.forEach((q, i) => {
+    const cor = respostas[i] ? 'certa' : 'errada';
+    html += `<div class="resumo-item">
+      <div class="marca ${cor}">${i+1}</div>
+      <span class="num-mini">Q${q.numero}</span>
+      <span class="tema-mini">${q.tema}</span>
+    </div>`;
+  });
+  html += `</div><button class="reiniciar" id="btnReiniciar">Refazer a revisão</button></div>`;
+  cartaoEl.innerHTML = html;
+  montarTrilha();
+  document.getElementById('btnReiniciar').addEventListener('click', () => {
+    atual = 0;
+    respostas = new Array(questoes.length).fill(null);
+    respostasEscolhidas = new Array(questoes.length).fill(null);
+    renderizarQuestao();
+  });
+}
+
+renderizarQuestao();
+</script>
+
+</body>
+</html>
